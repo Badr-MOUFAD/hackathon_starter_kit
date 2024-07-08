@@ -2,14 +2,13 @@ import numpy as np
 from scipy.stats import wasserstein_distance
 
 import torch
+from torch.func import grad
 from torch.distributions import (
     Distribution,
     MixtureSameFamily,
     Categorical,
     MultivariateNormal,
 )
-
-from sampling.epsilon_net import EpsilonNet, EpsilonNetGM, EpsilonNetSVD
 
 
 def sliced_wasserstein(
@@ -50,27 +49,6 @@ def sliced_wasserstein(
             for d1, d2 in zip(dist_1_projected, dist_2_projected)
         ]
     )
-
-
-def load_gmm_epsilon_net(prior: Distribution, dim: int, n_steps: int):
-    timesteps = torch.linspace(0, 999, n_steps).long()
-    alphas_cumprod = torch.linspace(0.9999, 0.98, 1000)
-    alphas_cumprod = torch.cumprod(alphas_cumprod, 0).clip(1e-10, 1)
-    alphas_cumprod = torch.concatenate([torch.tensor([1.0]), alphas_cumprod])
-
-    means, covs, weights = (
-        prior.component_distribution.mean,
-        prior.component_distribution.covariance_matrix,
-        prior.mixture_distribution.probs,
-    )
-
-    epsilon_net = EpsilonNet(
-        net=EpsilonNetGM(means, weights, alphas_cumprod, covs),
-        alphas_cumprod=alphas_cumprod,
-        timesteps=timesteps,
-    )
-
-    return epsilon_net
 
 
 def generate_inverse_problem(
@@ -162,6 +140,27 @@ def fwd_mixture(
 
     mvn = MultivariateNormal(means, covs)
     return MixtureSameFamily(Categorical(weights), mvn)
+
+
+class EpsilonNetGM(torch.nn.Module):
+
+    def __init__(self, means, weights, alphas_cumprod, cov=None):
+        super().__init__()
+        self.means = means
+        self.weights = weights
+        self.covs = cov
+        self.alphas_cumprod = alphas_cumprod
+
+    def forward(self, x, t):
+        acp_t = self.alphas_cumprod[t.to(int)]
+        grad_logprob = grad(
+            lambda x: fwd_mixture(
+                self.means, self.weights, self.alphas_cumprod, t, self.covs
+            )
+            .log_prob(x)
+            .sum()
+        )
+        return -((1 - acp_t) ** 0.5) * grad_logprob(x)
 
 
 # code copy/paste from DDRM

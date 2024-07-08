@@ -2,8 +2,6 @@ import torch
 import numpy as np
 from torch import vmap
 from torch.func import jacrev
-from evaluation.gmm import fwd_mixture
-from torch.func import grad
 
 
 class EpsilonNet(torch.nn.Module):
@@ -38,27 +36,6 @@ class EpsilonNet(torch.nn.Module):
 
         pred_x0 = self.predict_x0(x, t)
         return pred_x0, vmap(jacrev(pred))(x)
-
-
-class EpsilonNetGM(torch.nn.Module):
-
-    def __init__(self, means, weights, alphas_cumprod, cov=None):
-        super().__init__()
-        self.means = means
-        self.weights = weights
-        self.covs = cov
-        self.alphas_cumprod = alphas_cumprod
-
-    def forward(self, x, t):
-        acp_t = self.alphas_cumprod[t.to(int)]
-        grad_logprob = grad(
-            lambda x: fwd_mixture(
-                self.means, self.weights, self.alphas_cumprod, t, self.covs
-            )
-            .log_prob(x)
-            .sum()
-        )
-        return -((1 - acp_t) ** 0.5) * grad_logprob(x)
 
 
 class EpsilonNetSVD(EpsilonNet):

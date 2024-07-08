@@ -2,9 +2,11 @@ import numpy as np
 from PIL import Image
 import torch, PIL, yaml
 from pathlib import Path
+from torch.distributions import Distribution
 
 from diffusers import DDPMPipeline
 
+from evaluation.gmm import EpsilonNetGM
 from sampling.epsilon_net import EpsilonNet
 from guided_diffusion.unet import create_model
 from guided_diffusion.gaussian_diffusion import create_sampler
@@ -37,6 +39,21 @@ def display_image(x: torch.Tensor, ax=None):
         plt.imshow(img_pil)
     else:
         ax.imshow(img_pil)
+
+
+def display_grayscale_image(x: torch.Tensor, ax=None):
+    """Display a grayscale image."""
+    sample = x.squeeze(0).detach().cpu()
+
+    sample = sample.clamp(-1, 1)
+    sample = (sample + 1.0) * 127.5
+    sample = sample.numpy().astype(np.uint8)
+    img_pil = PIL.Image.fromarray(sample)
+
+    if ax is None:
+        plt.imshow(img_pil, cmap="gray")
+    else:
+        ax.imshow(img_pil, cmap="gray")
 
 
 def load_epsilon_net(model_id: str, n_steps: int, device: str) -> EpsilonNet:
@@ -130,3 +147,24 @@ def load_epsilon_net(model_id: str, n_steps: int, device: str) -> EpsilonNet:
         raise ValueError(
             "Unknown model.\n" "`model_id` must be either 'celebahq' or 'ffhq' "
         )
+
+
+def load_gmm_epsilon_net(prior: Distribution, dim: int, n_steps: int):
+    timesteps = torch.linspace(0, 999, n_steps).long()
+    alphas_cumprod = torch.linspace(0.9999, 0.98, 1000)
+    alphas_cumprod = torch.cumprod(alphas_cumprod, 0).clip(1e-10, 1)
+    alphas_cumprod = torch.concatenate([torch.tensor([1.0]), alphas_cumprod])
+
+    means, covs, weights = (
+        prior.component_distribution.mean,
+        prior.component_distribution.covariance_matrix,
+        prior.mixture_distribution.probs,
+    )
+
+    epsilon_net = EpsilonNet(
+        net=EpsilonNetGM(means, weights, alphas_cumprod, covs),
+        alphas_cumprod=alphas_cumprod,
+        timesteps=timesteps,
+    )
+
+    return epsilon_net
