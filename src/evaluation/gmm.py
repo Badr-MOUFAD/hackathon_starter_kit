@@ -144,6 +144,26 @@ def gaussian_posterior(
     )
 
 
+def fwd_mixture(
+    means: torch.tensor,
+    weights: torch.tensor,
+    alphas_cumprod: torch.tensor,
+    t: torch.tensor,
+    covs: torch.tensor = None,
+):
+    n_mixtures = weights.shape[0]
+    acp_t = alphas_cumprod[t]
+    means = acp_t.sqrt() * means
+    Id = torch.eye(means.shape[-1])[None, ...].repeat(n_mixtures, 1, 1)
+    if covs is None:
+        covs = Id
+    else:
+        covs = (1 - acp_t) * Id + acp_t * covs
+
+    mvn = MultivariateNormal(means, covs)
+    return MixtureSameFamily(Categorical(weights), mvn)
+
+
 # code copy/paste from DDRM
 # https://github.com/bahjat-kawar/ddrm/blob/32b6b3ccfda532ba01c9cc5b6e7456c3a06a6ca2/functions/svd_replacement.py#L72
 
