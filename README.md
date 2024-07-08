@@ -53,5 +53,8 @@ There are two notebooks to help you get started
 
 ## Note
 
+- To avoid installation conflicts, the code of the following repositories was moved/modified inside ``src`` folder
+    - https://github.com/gabrielvc/mcg_diff
+    - https://github.com/openai/guided-diffusion
 - Link to download FFHQ model checkpoint https://drive.google.com/drive/folders/1jElnRoFv7b31fG0v6pTSQkelbSX3xGZh
 - Evaluation script and the inverse problems used will be uploaded later during the week
