@@ -9,7 +9,7 @@ from torch.distributions import (
     MultivariateNormal,
 )
 
-from py_source.sampling.epsilon_net import EpsilonNet, EpsilonNetGM, EpsilonNetSVD
+from sampling.epsilon_net import EpsilonNet, EpsilonNetGM, EpsilonNetSVD
 
 
 def sliced_wasserstein(

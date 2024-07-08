@@ -1,6 +1,6 @@
 from typing import Tuple
 import torch
-from py_source.sampling.epsilon_net import ddim_step, EpsilonNet
+from sampling.epsilon_net import ddim_step, EpsilonNet
 
 
 def dps(

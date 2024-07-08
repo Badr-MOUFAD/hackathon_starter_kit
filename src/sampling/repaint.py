@@ -1,7 +1,7 @@
 from typing import Tuple
 
 import torch
-from py_source.sampling.epsilon_net import ddim_step, EpsilonNetSVD
+from sampling.epsilon_net import ddim_step, EpsilonNetSVD
 
 
 def repaint_svd(

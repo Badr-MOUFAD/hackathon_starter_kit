@@ -1,7 +1,7 @@
 import torch
 
-from py_source.utils import display_image
-from py_source.sampling.epsilon_net import EpsilonNet, bridge_kernel_statistics
+from utils import display_image
+from sampling.epsilon_net import EpsilonNet, bridge_kernel_statistics
 
 import matplotlib.pyplot as plt
 

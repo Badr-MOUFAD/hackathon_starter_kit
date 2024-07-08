@@ -5,10 +5,10 @@ from pathlib import Path
 
 from diffusers import DDPMPipeline
 
-from py_source.sampling.epsilon_net import EpsilonNet
-from py_source.guided_diffusion.unet import create_model
-from py_source.guided_diffusion.gaussian_diffusion import create_sampler
-from py_source.local_paths import ABS_PROJECT_PATH
+from sampling.epsilon_net import EpsilonNet
+from guided_diffusion.unet import create_model
+from guided_diffusion.gaussian_diffusion import create_sampler
+from local_paths import ABS_PROJECT_PATH
 
 import matplotlib.pyplot as plt
 
