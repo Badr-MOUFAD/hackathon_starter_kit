@@ -2,7 +2,7 @@ import torch
 import numpy as np
 from torch import vmap
 from torch.func import jacrev
-from utils.utils import fwd_mixture
+from evaluation.gmm import fwd_mixture
 from torch.func import grad
 
 
