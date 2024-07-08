@@ -43,7 +43,7 @@ def load_epsilon_net(model_id: str, n_steps: int, device: str) -> EpsilonNet:
     """Load a diffusion model with a given diffusion steps.
 
     model_id : str
-        The model name and should be either "celebahq" or  "ffhq"
+        The model name and should be either "celebahq", "ffhq", "bedroom"
 
     n_steps : int
         The number of diffusion steps.
@@ -52,8 +52,14 @@ def load_epsilon_net(model_id: str, n_steps: int, device: str) -> EpsilonNet:
         The device where to put the model.
     """
 
-    if model_id == "celebahq":
-        hf_id = "google/ddpm-celebahq-256"
+
+    HF_MODELS = {
+        "bedroom": "google/ddpm-bedroom-256",
+        "celebahq": "google/ddpm-celebahq-256"
+    }
+
+    if model_id in HF_MODELS:
+        hf_id = HF_MODELS[model_id]
         pipeline = DDPMPipeline.from_pretrained(hf_id).to(device)
         model = pipeline.unet
 
