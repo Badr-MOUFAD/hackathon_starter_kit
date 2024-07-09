@@ -1,7 +1,6 @@
 import numpy as np
 from PIL import Image
 import torch, PIL, yaml
-from pathlib import Path
 from torch.distributions import Distribution
 
 from diffusers import DDPMPipeline
@@ -15,8 +14,12 @@ from local_paths import ABS_PROJECT_PATH
 import matplotlib.pyplot as plt
 
 
-def load_image(img_path: str | Path, device="cpu") -> torch.Tensor:
-    """Load and image as Tensor."""
+def load_image(img_path, device="cpu") -> torch.Tensor:
+    """Load and image as Tensor.
+
+    img_path : str or Path
+        the path of the image.
+    """
     image = Image.open(img_path)
 
     im = torch.tensor(np.array(image)).type(torch.FloatTensor).to(device)
